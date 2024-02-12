@@ -1,0 +1,72 @@
+treeNode components:
+    Right Pointer
+    Left Pointer
+    Tag (Is it a value?)
+    Value (number)
+    Operator (If tag is false and isn't a number)
+
+
+How to build an expression tree from string:
+str = "(a + b * c) + ((c * e + f ) * g)"
+
+char<stack> operators;
+treeNode<stack> treeNodePointers;
+
+opening paranthesis have lowest priority
+then +/-
+then *//
+closing paranthesis have the highest priority
+
+
+Iterate through str:
+    If character is an operator("()*/+-"):
+        Check if operator is higher/lower priority
+            Add operator to top of stack if it is higher
+            If it is a lower priority:
+                Go through the operator stack until you find a lesser or equal operator:
+                While going through:
+                    Make sure there is at least 2 treeNodePointers so that the operator node can point to two expressions/operants
+                    Make the top most operator into an operator treeNode:
+                        Right pointer = treeNode.pop
+                        Left pointer = treeNode.pop
+                        Tag is false
+                        Value is none
+                        operator is the current operator you're working with
+
+    If character is an operant(float):
+        Create an operant treeNode
+            Left & Right pointers are null
+            Tag is true
+            Set value to opperant
+            Operator is empty
+
+
+( - Add to operators
+a - Make treeNode & add to pointer stack
++ - Add to operators
+b - Add to pointers
+* - Add to operator
+) - Go through operators until opening paranthesis
++ - Add to operators
+( - Add to operators
+( - Add to operators
+c - Add to pointers
+* - Add to operators
+e - Add to pointers
++ - * is higher priority. 
+    Converet it to treeNode and pop two pointers. 
+    Opening paranthesis is equal priority. 
+    Add + to operators
+f - Add to pointers
+) - + is higher priority. 
+    Convert it to treeNode and pop two pointers. 
+    Opening paranthesis friend. pop it
+* - Add to operators
+g - Add to pointers
+) - * is higher priority. 
+    Convert it to treeNode and pop two pointers. 
+    Opening paranthesis friend. pop it
+We've reached the end of the string.
+    Go through the rest of the operators.
+    Convert + into treeNode and pop two pointers.
+    Now the + is the root of the binary expression tree.
