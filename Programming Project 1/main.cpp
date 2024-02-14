@@ -12,6 +12,7 @@ class TreeNode{
         char op;
         TreeNode *left;
         TreeNode *right;
+
     public:
     TreeNode(bool inTag, float inValue, char inOp, TreeNode *inLeft = nullptr, TreeNode *inRight = nullptr){
         tag = inTag;
@@ -48,6 +49,30 @@ class TreeNode{
     void setRight(TreeNode *inRight){
         right = inRight;
     }
+
+    int priorityValue(){
+        if(getTag()){
+            return 3;
+        }
+        else{
+            switch(getOp()){
+                case ')':
+                    return 0;
+                case '(':
+                case '+':
+                case '-':
+                    return 1;
+                case '*':
+                case '/':
+                    return 2;
+            }
+        }
+        return -1;
+    }
+
+    bool isHigherPriority(TreeNode *compare){
+        return priorityValue() >= compare->priorityValue();
+    }
 };
 
 queue<TreeNode*> convertToNode(string expression){
@@ -77,20 +102,6 @@ queue<TreeNode*> convertToNode(string expression){
     return exp;
 }
 
-
-
-// True if op1 is higher priority
-// False if op2 is higher priority
-bool compareOperators(char op1, char op2){
-    string priority = ")(+-*/";
-    cout << "Comparing: " << op1 << " & " << op2 << endl;
-    if(priority.find(op1) > priority.find(op2)){
-        cout<<"true"<<endl;
-        return true;
-    }
-    else {cout<<"false"<<endl;return false;}
-}
-
 TreeNode* buildTree(queue<TreeNode*> exp){
     stack<TreeNode*> numbers;
     stack<TreeNode*> operators;
@@ -105,12 +116,12 @@ TreeNode* buildTree(queue<TreeNode*> exp){
                 operators.push(exp.front());
                 exp.pop();
             }
-            else if(compareOperators(exp.front()->getOp(), operators.top()->getOp())){
+            else if(exp.front()->isHigherPriority(operators.top())){
                 operators.push(exp.front());
                 exp.pop();
             }
             else{
-                while(!(operators.empty() || compareOperators(exp.front()->getOp(), operators.top()->getOp()))){
+                while(!(operators.empty() || exp.front()->isHigherPriority(operators.top()))){
                     if(operators.top()->getOp() == '(' && exp.front()->getOp() == ')'){
                         exp.pop();
                         operators.pop();
@@ -159,8 +170,6 @@ float calculator(TreeNode *root){
     return 0;
 }
 
-
-
 int main(){
     ifstream inFile;
     string tmp;
@@ -168,7 +177,7 @@ int main(){
     while(getline(inFile, tmp)){
         queue<TreeNode*> exp = convertToNode(tmp);
         TreeNode *root = buildTree(exp);
-        cout << calculator(root) << endl;
+        // cout << calculator(root) << endl;
     }
     
     return 0;
