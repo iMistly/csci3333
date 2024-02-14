@@ -77,6 +77,8 @@ queue<TreeNode*> convertToNode(string expression){
     return exp;
 }
 
+
+
 // True if op1 is higher priority
 // False if op2 is higher priority
 bool compareOperators(char op1, char op2){
@@ -84,7 +86,8 @@ bool compareOperators(char op1, char op2){
     cout << "Comparing: " << op1 << " & " << op2 << endl;
     if(priority.find(op1) > priority.find(op2)){
         cout<<"true"<<endl;
-        return true;}
+        return true;
+    }
     else {cout<<"false"<<endl;return false;}
 }
 
@@ -107,7 +110,7 @@ TreeNode* buildTree(queue<TreeNode*> exp){
                 exp.pop();
             }
             else{
-                while(!(compareOperators(exp.front()->getOp(), operators.top()->getOp()))){
+                while(!(operators.empty() || compareOperators(exp.front()->getOp(), operators.top()->getOp()))){
                     if(operators.top()->getOp() == '(' && exp.front()->getOp() == ')'){
                         exp.pop();
                         operators.pop();
