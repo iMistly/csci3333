@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <stack>
@@ -71,6 +72,7 @@ class TreeNode{
     }
 
     bool isHigherPriority(TreeNode *compare){
+        if(!(getTag()) && getOp() == '('){return true;}
         return priorityValue() >= compare->priorityValue();
     }
 };
@@ -130,26 +132,49 @@ TreeNode* buildTree(queue<TreeNode*> exp){
                     else if(numbers.size() >= 2){
                         TreeNode *tmp = operators.top();
                         operators.pop();
-                        tmp->setLeft(numbers.top());
-                        numbers.pop();
                         tmp->setRight(numbers.top());
+                        numbers.pop();
+                        tmp->setLeft(numbers.top());
                         numbers.pop();
                         numbers.push(tmp);
                     }
                     else {
-                        cout << "Invalid expression" << endl;
-                        break;
-                        // return new TreeNode(false, 0, '!');
+                        cout << "There isn't enough numbers" << endl;
+                        return new TreeNode(false, 0, '!');
                     }
                 }
             }
         }
     }
+    while(!(operators.empty())){
+        if(numbers.size() >= 2){
+            TreeNode *tmp = operators.top();
+            operators.pop();
+            tmp->setRight(numbers.top());
+            numbers.pop();
+            tmp->setLeft(numbers.top());
+            numbers.pop();
+            numbers.push(tmp);
+        }
+        else{
+            cout << "There is a left over operator: " << operators.top()->getOp() << endl;
+            return new TreeNode(false, 0, '!');
+        }
+    }
+    if(numbers.size() == 1)
+        root = numbers.top();
+    else{
+        cout << "Tree ended up with too many numbers" << endl;
+        return new TreeNode(false, 0, '!');
+    }
+
     cout << "Got to the end!" << endl;
     return root;
 }
 
 float calculator(TreeNode *root){
+    if(root->getOp() == '!'){return -1;}
+
     if(root->getTag()){
         return root->getValue();
     }
@@ -170,6 +195,52 @@ float calculator(TreeNode *root){
     return 0;
 }
 
+string inorderTraversal(TreeNode* root) {
+    if (root == nullptr || root->getOp() == '!') {return "Syntax error.";}
+
+    ostringstream fString;
+    if(root->getTag())
+        fString << root->getValue();
+    else
+        fString << '(' << inorderTraversal(root->getLeft()) << root->getOp() << inorderTraversal(root->getRight()) << ')';
+    
+    return fString.str();
+}
+
+string preorderTraversal(TreeNode* root){
+    if (root == nullptr) {return "";}
+    else if (root->getOp() == '!') {return "Syntax error.";}
+
+    ostringstream fString;
+
+    if(root->getTag())
+        fString << root->getValue() << ' ';
+    else 
+        fString << root->getOp() << ' ';
+
+    fString << preorderTraversal(root->getLeft());
+    fString << preorderTraversal(root->getRight());
+
+    return fString.str();
+}
+
+string postorderTraversal(TreeNode* root){
+    if (root == nullptr) {return "";}
+    else if (root->getOp() == '!') {return "Syntax error.";}
+
+    ostringstream fString;
+
+    fString << postorderTraversal(root->getLeft());
+    fString << postorderTraversal(root->getRight());
+
+    if(root->getTag())
+        fString << root->getValue() << ' ';
+    else 
+        fString << root->getOp() << ' ';
+
+    return fString.str();
+}
+
 int main(){
     ifstream inFile;
     string tmp;
@@ -177,7 +248,13 @@ int main(){
     while(getline(inFile, tmp)){
         queue<TreeNode*> exp = convertToNode(tmp);
         TreeNode *root = buildTree(exp);
-        // cout << calculator(root) << endl;
+        if(root->getOp() != '!'){
+            cout << "Evaluation:\t" << calculator(root) << endl;
+            cout << "In-order:\t" << inorderTraversal(root) << endl;
+            cout << "Pre-order:\t" << preorderTraversal(root) << endl;
+            cout << "Post-order:\t" << postorderTraversal(root) << endl;
+        }
+        cout << endl;
     }
     
     return 0;
