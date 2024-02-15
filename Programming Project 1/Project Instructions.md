@@ -17,7 +17,7 @@ The table below lists operation precedence and association orders.
 
 |Operator|Precedence (or Priority)|Association Order|
 |--------|------------------------|-----------------|
-|(  )	 |0 (highest precedence)  |left to right   |
+|(  )	 |0 (highest precedence)  |left to right    |
 |*, /	 |1	                      |left to right    |
 |+, -	 |2	                      |left to right    |
 
