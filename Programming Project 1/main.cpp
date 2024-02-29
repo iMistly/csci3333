@@ -52,28 +52,24 @@ class TreeNode{
     }
 
     int priorityValue(){
-        if(getTag()){
-            return 3;
+        switch(getOp()){
+            case ')':
+                return 0;
+            case '(':
+            case '+':
+            case '-':
+                return 1;
+            case '*':
+            case '/':
+                return 2;
+            default:
+                return 3;
         }
-        else{
-            switch(getOp()){
-                case ')':
-                    return 0;
-                case '(':
-                case '+':
-                case '-':
-                    return 1;
-                case '*':
-                case '/':
-                    return 2;
-            }
-        }
-        return -1;
     }
 
-    bool isHigherPriority(TreeNode *compare){
-        if(!(getTag()) && getOp() == '('){return true;}
-        return priorityValue() >= compare->priorityValue();
+    bool isHigherPriority(TreeNode *toCompare){
+        if(!tag && op == '('){return true;}
+        return priorityValue() >= toCompare->priorityValue();
     }
 };
 
@@ -81,22 +77,79 @@ queue<TreeNode*> convertToNode(string expression){
     queue<TreeNode*> exp;
     string numbers = ".0123456789";
     string operators = "()+-*/";
+    string logOp = "!<>=&|";
     string num;
     bool isNum = false;
+    bool error = false;
 
-    for(auto c : expression){
-        if(numbers.find(c) != string::npos){
-            num += c;
+    string::iterator it = expression.begin();
+
+    while(it != expression.end()){
+        if(numbers.find(*it) != string::npos){
+            num += *it;
             isNum = true;
         }
-        else if(operators.find(c) != string::npos){
+        else if(operators.find(*it) != string::npos){
             if(isNum){
                 exp.push(new TreeNode(true, stof(num), '#'));
                 num = "";
                 isNum = false;
             }
-            exp.push(new TreeNode(false, 0, c));
+            exp.push(new TreeNode(false, 0, *it));
         }
+        else if(logOp.find(*it) != string::npos){
+            switch(*it){
+                case('!'):
+                    exp.push(new TreeNode(false, 0, *it));
+                    break;
+                case('<'):
+                    if(*(it+1) == '='){
+                        exp.push(new TreeNode(false, 0, 'L'));
+                        ++it;
+                    }
+                    else{exp.push(new TreeNode(false, 0, 'l'));}
+                    break;
+                case('>'):
+                    if(*(it+1) == '='){
+                        exp.push(new TreeNode(false, 0, 'G'));
+                        ++it;
+                    }
+                    else{exp.push(new TreeNode(false, 0, 'g'));}
+                    break;
+                case('='):
+                    if(*(it+1) == '='){
+                        exp.push(new TreeNode(false, 0, '='));
+                        ++it;
+                    }
+                    else{
+                        cout << "A single '=' is not a valid expression." << endl;
+                        error = true;
+                    }
+                    break;
+                case('&'):
+                    if(*(it+1) == '&'){
+                        exp.push(new TreeNode(false, 0, 'a'));
+                        ++it;
+                    }
+                    else{
+                        cout << "This program doesn't support bitwise operator '&'." << endl;
+                        error = true;
+                    }
+                    break;
+                case('|'):
+                    if(*(it+1) == '|'){
+                        exp.push(new TreeNode(false, 0, 'o'));
+                        ++it;
+                    }
+                    else{
+                        cout << "This program doesn't support bitwise operator '|'." << endl;
+                        error = true;
+                    }
+                    break;
+            }
+            if(error){return (queue<TreeNode*>());}
+        }
+        ++it;
     }
 
     if(isNum) {exp.push(new TreeNode(true, stof(num), '#'));}
@@ -107,24 +160,29 @@ queue<TreeNode*> convertToNode(string expression){
 TreeNode* buildTree(queue<TreeNode*> exp){
     stack<TreeNode*> numbers;
     stack<TreeNode*> operators;
-    TreeNode *root;
+    stack<TreeNode*> logOps;
+    TreeNode *root, *front;
     while(!(exp.empty())){
-        if(exp.front()->getTag()){
-            numbers.push(exp.front());
+        front = exp.front();
+        if(front->getTag()){
+            numbers.push(front);
             exp.pop();
+        }
+        else if(front->priorityValue() == 3){
+            logOps.push(front);
         }
         else{
             if(operators.empty()){
-                operators.push(exp.front());
+                operators.push(front);
                 exp.pop();
             }
-            else if(exp.front()->isHigherPriority(operators.top())){
-                operators.push(exp.front());
+            else if(front->isHigherPriority(operators.top())){
+                operators.push(front);
                 exp.pop();
             }
             else{
-                while(!(operators.empty() || exp.front()->isHigherPriority(operators.top()))){
-                    if(operators.top()->getOp() == '(' && exp.front()->getOp() == ')'){
+                while(!(operators.empty() || front->isHigherPriority(operators.top()))){
+                    if(operators.top()->getOp() == '(' && front->getOp() == ')'){
                         exp.pop();
                         operators.pop();
                         break;
@@ -140,7 +198,7 @@ TreeNode* buildTree(queue<TreeNode*> exp){
                     }
                     else {
                         cout << "There isn't enough numbers" << endl;
-                        return new TreeNode(false, 0, '!');
+                        return new TreeNode(false, 0, '~');
                     }
                 }
             }
@@ -158,14 +216,21 @@ TreeNode* buildTree(queue<TreeNode*> exp){
         }
         else{
             cout << "There is a left over operator: " << operators.top()->getOp() << endl;
-            return new TreeNode(false, 0, '!');
+            return new TreeNode(false, 0, '~');
+        }
+    }
+    while(!(logOps.empty())){
+        if(numbers.size() >= 2){
+            TreeNode *tmp = logOps.top();
+            logOps.pop();
+            tmp->setRight(numbers.top());
         }
     }
     if(numbers.size() == 1)
         root = numbers.top();
     else{
         cout << "Tree ended up with too many numbers" << endl;
-        return new TreeNode(false, 0, '!');
+        return new TreeNode(false, 0, '~');
     }
 
     cout << "Got to the end!" << endl;
@@ -173,7 +238,7 @@ TreeNode* buildTree(queue<TreeNode*> exp){
 }
 
 float calculator(TreeNode *root){
-    if(root->getOp() == '!'){return -1;}
+    if(root->getOp() == '~'){return -1;}
 
     if(root->getTag()){
         return root->getValue();
@@ -196,7 +261,7 @@ float calculator(TreeNode *root){
 }
 
 string inorderTraversal(TreeNode* root) {
-    if (root == nullptr || root->getOp() == '!') {return "Syntax error.";}
+    if (root == nullptr || root->getOp() == '~') {return "Syntax error.";}
 
     ostringstream fString;
     if(root->getTag())
@@ -209,7 +274,7 @@ string inorderTraversal(TreeNode* root) {
 
 string preorderTraversal(TreeNode* root){
     if (root == nullptr) {return "";}
-    else if (root->getOp() == '!') {return "Syntax error.";}
+    if (root->getOp() == '~') {return "Syntax error.";}
 
     ostringstream fString;
 
@@ -226,7 +291,7 @@ string preorderTraversal(TreeNode* root){
 
 string postorderTraversal(TreeNode* root){
     if (root == nullptr) {return "";}
-    else if (root->getOp() == '!') {return "Syntax error.";}
+    if (root->getOp() == '~') {return "Syntax error.";}
 
     ostringstream fString;
 
@@ -246,9 +311,12 @@ int main(){
     string tmp;
     inFile.open("tests.txt");
     while(getline(inFile, tmp)){
+        if(tmp == ""){
+            continue;
+        }
         queue<TreeNode*> exp = convertToNode(tmp);
         TreeNode *root = buildTree(exp);
-        if(root->getOp() != '!'){
+        if(root->getOp() != '~'){
             cout << "Evaluation:\t" << calculator(root) << endl;
             cout << "In-order:\t" << inorderTraversal(root) << endl;
             cout << "Pre-order:\t" << preorderTraversal(root) << endl;
