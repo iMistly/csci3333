@@ -1,0 +1,43 @@
+This file is finding the most common phrases in 'huckleberryFinn.txt'
+
+Most common 1 word phrases.
+------------------------
+6323			and
+5059			the
+3217			i
+3014			a
+2996			to
+2299			it
+2038			was
+1778			of
+1657			he
+1505			in
+
+Most common 2 word phrases.
+------------------------
+451			in the
+365			of the
+350			it was
+322			and the
+285			i was
+250			to the
+250			and i
+234			and then
+232			on the
+202			out of
+
+Most common 3 word phrases.
+------------------------
+83			by and by
+62			out of the
+53			was going to
+49			there was a
+47			it was a
+47			all the time
+42			the old man
+37			said it was
+34			and then he
+34			a lot of
+
+
+Time computed: 0.81 seconds
