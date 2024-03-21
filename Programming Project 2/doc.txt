@@ -1,0 +1,42 @@
+Top 1 phrases
+3972	the
+3277	i
+3174	and
+1902	a
+=================
+Top 2 phrases
+365	of the
+319	in the
+290	i was
+245	and i
+=================
+Top 3 phrases
+48	all the time
+=================
+Top 4 phrases
+22	and by and by
+21	i says to myself
+21	the middle of the
+14	a kind of a
+=================
+Top 5 phrases
+9	in the middle of the
+9	the middle of the river
+8	a quarter of a mile
+=================
+Top 6 phrases
+3	and so forth and so on
+=================
+Top 7 phrases
+3	donations to the project gutenberg literary archive
+=================
+Top 8 phrases
+3	donations to the project gutenberg literary archive foundation
+0	and the bulrushers miss watson huck stealing away
+=================
+Top 9 phrases
+2	agree to be bound by the terms of this
+=================
+Top 10 phrases
+2	agree to be bound by the terms of this agreement
+=================
