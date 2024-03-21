@@ -3,15 +3,56 @@
 #include <vector>
 #include <unordered_map>
 #include <time.h>
+#include<bits/stdc++.h>
 #include <fstream>
 using namespace std;
+
+struct WordDoc{
+    string fileName;
+    vector<pair<int, string>> sortedPhrases[10];
+
+    WordDoc(string inFileName){
+        fileName = inFileName;
+    }
+
+    void addVector(vector<pair<int, string>> vec, int index){
+        sortedPhrases[index] = vec;
+    }
+
+    void writeToFile(){
+        string newFile = fileName.substr(0, fileName.length()-4) + "_phrases.txt";
+        ofstream file(newFile);
+
+        for(int i = 0; i<10; ++i){
+            file << "Top 10 " << i+1 << " word phrases." << endl;
+            file << "===========================" << endl;
+            for (int i = 0; i < 10; ++i) {
+                priority_queue<pair<int, string>> pq;
+                for (const auto& phrase : sortedPhrases[i]) {
+                    pq.push(phrase);
+                    if (pq.size() > 10) {
+                        pq.pop();
+                    }
+                }
+                file << "Top 10 " << i + 1 << " word phrases." << endl;
+                file << "===========================" << endl;
+                while (!pq.empty()) {
+                    pair<int, string> current = pq.top();
+                    pq.pop();
+                    file << current.first << "\t\t\t" << current.second << endl;
+                }
+            }
+        }
+        file.close();
+    }
+};
 
 vector<string> getSentences(string filename){
     fstream file;
     vector<string> sentences;
     string fileStr = "";
     string endPunc = ".!?";
-    string specialPunc = "\"{}[]()~";
+    string specialPunc = "\"/\\{}[]()~";
     string erasePunc = ",:;";
     string line;
 
@@ -110,71 +151,21 @@ unordered_map<string, int> getPhrases(vector<string>& sentences, int length){
     return table;
 }
 
-void mergeSort(vector<tuple<string, int>>& left, vector<tuple<string, int>>& right, vector<tuple<string, int>>& phrases){
-    int leftSize = left.size();
-    int rightSize = right.size();
-    // Counters
-    int i{}, j{}, k{};
-
-    while (j < leftSize && k < rightSize) 
-    {
-        if (get<1>(left[j]) < get<1>(right[k])) {
-            phrases[i] = left[j];
-            j++;
-        }
-        else {
-            phrases[i] = right[k];
-            k++;
-        }
-        i++;
-    }
-    while (j < leftSize) {
-        phrases[i] = left[j];
-        j++; i++;
-    }
-    while (k < rightSize) {
-        phrases[i] = right[k];
-        k++; i++;
-    }
-}
-
-void sort(vector<tuple<string, int>>& phrases){
-    int size = phrases.size();
-    if(size <= 1){
-        return;
-    }
-
-    int mid = size /2;
-    vector<tuple<string, int>> left;
-    vector<tuple<string, int>> right;
-
-    for(size_t i = 0; i < mid; ++i){
-        left.push_back(phrases[i]);
-    }
-    for(size_t i = 0; i < size-mid; ++i){
-        left.push_back(phrases[mid+i]);
-    }
-
-    sort(left);
-    sort(right);
-    mergeSort(left, right, phrases);
-}
-
-vector<tuple<string, int>> commonPhrases(unordered_map<string, int>& phrases, int num){
-    vector<tuple<string, int>> mostCommon;
+vector<pair<string, int>> commonPhrases(unordered_map<string, int>& phrases, int num){
+    vector<pair<string, int>> mostCommon;
 
     // Sorting algorithm 
     for(int i = 0; i<num; ++i){
-        tuple<string, int> maxPhrase;
-        int max{}; // Initialize max outside the loop
+        pair<string, int> maxPhrase;
+        int max{};
         for(auto x : phrases){
             if(x.second > max){
-                maxPhrase = make_tuple(x.first, x.second);
+                maxPhrase = make_pair(x.first, x.second);
                 max = x.second;
             }
         }
         mostCommon.push_back(maxPhrase);
-        phrases.erase(get<0>(maxPhrase));
+        phrases.erase(maxPhrase.first);
     }
 
     return mostCommon;
@@ -183,40 +174,29 @@ vector<tuple<string, int>> commonPhrases(unordered_map<string, int>& phrases, in
 int main(){
     clock_t start = clock();
 
-    ofstream file("out.txt");
-    string fileName = "huckleberryFinn.txt";
-    file << "This file is finding the most common phrases in '" << fileName << "'\n\n";
-    vector<string> sentences = getSentences(fileName);
-
-    for(int i = 1; i <= 3; ++i){
-        unordered_map<string, int> phrases = getPhrases(sentences, i);
-        // for(auto x : phrases){
-        //     file << x.second << "\t\t\t" << x.first << endl;
-        // }
-        // vector<tuple<string, int>> vecPhrases;
-        // for(auto x : phrases){
-        //     vecPhrases.push_back(make_pair(x.first, x.second));
-        //     phrases.erase(x.first);
-        // }
-        // sort(vecPhrases);
-
-        // for(auto x : vecPhrases){
-        //     file << get<1>(x) << "\t\t\t" << get<0>(x) << endl;
-        // }
-
-        auto mostCommon = commonPhrases(phrases, 10);
-        file << "Most common " << i << " word phrases." << endl;
-        file << "------------------------" << endl;
-        for(auto x : mostCommon){
-            file << get<1>(x) << "\t\t\t" << get<0>(x) << endl;
+    vector<string> files = {"huckleberryFinn.txt"};
+    // vector<WordDoc> computed;
+    
+    for(auto file : files){
+        vector<string> sentences = getSentences(file);
+        WordDoc tmp(file);
+        for(int i = 1; i <= 10; ++i){
+            unordered_map<string, int> phrases = getPhrases(sentences, i);
+            vector<pair<int, string>> vecPhrases;
+            for (auto phrase : phrases) {
+                vecPhrases.push_back(make_pair(phrase.second, phrase.first));
+            }
+            sort(vecPhrases.begin(), vecPhrases.end());
+            clock_t mid = clock();
+            cout << i << ": Time - " << (double)(mid - start) / 1000 << " seconds" << endl;
+            tmp.addVector(vecPhrases, i-1);
         }
-        file << endl;
+        // computed.push_back(tmp);
+        tmp.writeToFile();
     }
 
     clock_t end = clock();
-    std::cout << "Time computed: " << (double)(end - start) / 1000 << " seconds" << endl;
-    file << "\nTime computed: " << (double)(end - start) / 1000 << " seconds" << endl;
-    file.close();
+    cout << "Time computed: " << (double)(end - start) / 1000 << " seconds" << endl;
 
     return 0;
 }
