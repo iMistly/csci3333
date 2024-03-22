@@ -23,7 +23,6 @@ int main(){
         }
         cleanSentence(sentence);
         if(sentence.empty()) {continue;}
-        // test << sentence << endl;
         vector<string> words = getWords(sentence);
         for(int i = 1; i <= min(10, static_cast<int>(words.size())); ++i){ // For phrases of length 1-10
             for(size_t j = 0; j < words.size()-i+1; ++j){
@@ -59,72 +58,33 @@ int main(){
                 for(int k = 1; k < i; ++k){
                     phrase += " " + words[k+j];
                 }
+                if(phrase[0] == ' '){phrase.erase(0, 1);}
+                if(phrase[phrase.length()] == ' '){phrase.erase(phrase.length(), 1);}
                 b2.insertPhrase(phrase, i);
             }
         }
         sentence = "";
     }
-
     file2.close();
 
+    map<string, int>* common = getCommonPhrases(b1, b2);
+    vector<pair<string, int>>* top = topPhrases(common);
+
+    ofstream results("doc.txt");
+    for(int i = 0; i < 10; ++i){
+        int count = 0;
+        results << "Top " << i+1 << " word phrases:\n";
+        results << "==============================\n";
+        for(auto phrase : *(top+i)){
+            if(count >= 10){break;}
+            results << phrase.second << '\t' << phrase.first << endl;
+            ++count;
+        }
+        results << '\n';
+    }
+    results.close();
+
     clock_t end = clock();
-
-    ofstream test("doc.txt");
-    for(int i = 0; i < 10; ++i){
-        test << "Top " << i+1 << " phrases\n";
-        for(auto p : b1.topPhrases[i]){
-            test << p.second << '\t' << p.first << endl;
-        }
-        test << "=================\n";
-    }
-
-
-    // Combine the topPhrases from both books.
-    // Use the common frequency of the phrase in both books.
-    // map<string, int> combined[10];
-    // for(int i = 0; i < 10; ++i){
-    //     for(auto p : b1.topPhrases[i]){
-    //         if(b2.phraseHash[i].find(p.first) != b2.phraseHash[i].end())
-    //             combined[i][p.first] = p.second;
-    //     }
-    //     for(auto p : b2.topPhrases[i]){
-    //         if(b1.phraseHash[i].find(p.first) != b1.phraseHash[i].end() && combined[i].find(p.first) == combined[i].end())
-    //             combined[i][p.first] = p.second;
-    //         else if(combined[i][p.first] > p.second)
-    //             combined[i][p.first] = p.second;
-    //     }
-    // }
-
-    // // Sort the combined phrases by frequency.
-    // vector<pair<string, int>> combinedVec[10];
-    // for(int i = 0; i < 10; ++i){
-    //     for(auto p : combined[i]){
-    //         if(combinedVec[i].empty()){
-    //             combinedVec[i].push_back(make_pair(p.first, p.second));
-    //             continue;
-    //         }
-    //         for(size_t j = 0; j < combinedVec[i].size(); ++j){
-    //             if(combinedVec[i][j].second < p.second){
-    //                 combinedVec[i].insert(combinedVec[i].begin() + j, make_pair(p.first, p.second));
-    //                 if(combinedVec[i].size() > 10){
-    //                     combinedVec[i].pop_back();
-    //                 }
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // Print the top 10 phrases for each length.
-    for(int i = 0; i < 10; ++i){
-        test << "Top " << i+1 << " phrases\n";
-        for(auto p : combinedVec[i]){
-            test << p.second << '\t' << p.first << endl;
-        }
-        test << "=================\n";
-    }
-
-    test.close();
     cout << "Time computed: " << (double)(end - start) / 1000 << " seconds" << endl;
 
     return 0;

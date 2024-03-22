@@ -16,32 +16,11 @@ struct BookDoc{
 
     void insertPhrase(string phrase, int length){
         int i = length-1;
-        if(phraseHash[i].find(phrase) == phraseHash[i].end())
+        if(phraseHash[i].find(phrase) == phraseHash[i].end()){
             phraseHash[i][phrase] = 1;
-        else
-            phraseHash[i][phrase] += 1;
-        checkTopPhrases(phrase, i);
-    }
-
-    void checkTopPhrases(string phrase, int index){
-        if(topPhrases[index].empty()){
-            topPhrases[index].push_back(make_pair(phrase, phraseHash[index][phrase]));
-            return;
         }
-
-        for(size_t i = 0; i < topPhrases[index].size(); ++i){
-            // Check if phrase is already in topPhrases
-            if(topPhrases[index][i].first == phrase){
-                topPhrases[index][i].second = phraseHash[index][phrase];
-                return;
-            }
-            if(topPhrases[index][i].second < phraseHash[index][phrase]){
-                topPhrases[index].insert(topPhrases[index].begin() + i, make_pair(phrase, phraseHash[index][phrase]));
-                if(topPhrases[index].size() > 10){
-                    topPhrases[index].pop_back();
-                }
-                return;
-            }
+        else{
+            phraseHash[i][phrase] += 1;
         }
     }
 };
@@ -117,4 +96,47 @@ vector<string> getWords(string sentence){
         words.push_back(current);
     }
     return words;
+}
+
+map<string, int>* getCommonPhrases(BookDoc b1, BookDoc b2) {
+    map<string, int>* commonPhrases = new map<string, int>[10];
+
+    for(int i = 0; i < 10; ++i){
+        for(auto& phrase : b1.phraseHash[i]){
+            if(b2.phraseHash[i].find(phrase.first) != b2.phraseHash[i].end()){
+                int minFrequency = min(phrase.second, b2.phraseHash[i][phrase.first]);
+                commonPhrases[i][phrase.first] = minFrequency;
+            }
+        }
+    }
+    return commonPhrases;
+}
+
+vector<pair<string, int>>* topPhrases(map<string, int>* myHash){
+    vector<pair<string, int>>* topPhrases = new vector<pair<string, int>>[10];
+    int max = 0;
+    pair<string, int> tmp;
+    for(int i = 0; i < 10; ++i){
+        for(int j = 0; j < 10; ++j){ // Sort the phrases by frequency
+            int max = 0;
+            pair<string, int> tmp;
+            for(auto it = myHash[i].rbegin(); it != myHash[i].rend(); ++it){
+                if(it->second > max){
+                    max = it->second;
+                    tmp = *it;
+                }
+            }
+            if(max != 0){
+                topPhrases[i].push_back(tmp);
+                myHash[i].erase(tmp.first);
+            }
+        }
+    }
+    // Add the top phrase back into myHash
+    for(int i = 0; i < 10; ++i){
+        for(auto& x : topPhrases[i]){
+            myHash[i][x.first] = x.second;
+        }
+    }
+    return topPhrases;
 }
