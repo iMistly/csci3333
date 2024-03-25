@@ -23,6 +23,13 @@ struct BookDoc{
             phraseHash[i][phrase] += 1;
         }
     }
+
+    void clearMemory(){
+        for(int i = 0; i < 10; ++i){
+            phraseHash[i].clear();
+            topPhrases[i].clear();
+        }
+    }
 };
 
 string getSentence(string& current){
@@ -105,7 +112,9 @@ map<string, int>* getCommonPhrases(BookDoc b1, BookDoc b2) {
         for(auto& phrase : b1.phraseHash[i]){
             if(b2.phraseHash[i].find(phrase.first) != b2.phraseHash[i].end()){
                 int minFrequency = min(phrase.second, b2.phraseHash[i][phrase.first]);
-                commonPhrases[i][phrase.first] = minFrequency;
+                if(minFrequency != 0){
+                    commonPhrases[i][phrase.first] = minFrequency;
+                }
             }
         }
     }

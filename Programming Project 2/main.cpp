@@ -69,6 +69,7 @@ int main(){
 
     map<string, int>* common = getCommonPhrases(b1, b2);
     vector<pair<string, int>>* top = topPhrases(common);
+    delete[] common;
 
     ofstream results("doc.txt");
     for(int i = 0; i < 10; ++i){
@@ -83,6 +84,10 @@ int main(){
         results << '\n';
     }
     results.close();
+    delete[] top;
+
+    b1.clearMemory();
+    b2.clearMemory();
 
     clock_t end = clock();
     cout << "Time computed: " << (double)(end - start) / 1000 << " seconds" << endl;
